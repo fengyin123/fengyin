@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Image Process 阈值处理 by fengyin123</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Image Process 阈值处理</h1>
+      <h2 class="project-tagline">风引</h2>
+      <a href="https://github.com/fengyin123/fengyin" class="btn">View on GitHub</a>
+      <a href="https://github.com/fengyin123/fengyin/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/fengyin123/fengyin/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <p>阈值分割
+1 /<em>===============================图像分割=====================================</em>/
+2 /<em>---------------------------------------------------------------------------</em>/
+3 /<em>手动设置阀值</em>/
+4 IplImage* binaryImg = cvCreateImage(cvSize(w, h),IPL_DEPTH_8U, 1);
+5 cvThreshold(smoothImgGauss,binaryImg,71,255,CV_THRESH_BINARY); 
+6 cvNamedWindow("cvThreshold", CV_WINDOW_AUTOSIZE );
+7 cvShowImage( "cvThreshold", binaryImg );
+8 //cvReleaseImage(&amp;binaryImg); 
+9  /<em>---------------------------------------------------------------------------</em>/
+10 /<em>自适应阀值 //计算像域邻域的平均灰度，来决定二值化的值</em>/
+11 IplImage* adThresImg = cvCreateImage(cvSize(w, h),IPL_DEPTH_8U, 1);
+12 double max_value=255;
+13 int adpative_method=CV_ADAPTIVE_THRESH_GAUSSIAN_C;//CV_ADAPTIVE_THRESH_MEAN_C
+14  int threshold_type=CV_THRESH_BINARY;
+15 int block_size=3;//阈值的象素邻域大小
+16  int offset=5;//窗口尺寸
+17   cvAdaptiveThreshold(smoothImgGauss,adThresImg,max_value,adpative_method,threshold_type,block_size,offset);
+18 cvNamedWindow("cvAdaptiveThreshold", CV_WINDOW_AUTOSIZE );
+19 cvShowImage( "cvAdaptiveThreshold", adThresImg );
+20 cvReleaseImage(&amp;adThresImg);
+21 /<em>---------------------------------------------------------------------------</em>/
+22 /<em>最大熵阀值分割法</em>/ 
+23 IplImage* imgMaxEntropy = cvCreateImage(cvGetSize(imgGrey),IPL_DEPTH_8U,1);
+24 MaxEntropy(smoothImgGauss,imgMaxEntropy);
+25 cvNamedWindow("MaxEntroyThreshold", CV_WINDOW_AUTOSIZE );
+26 cvShowImage( "MaxEntroyThreshold", imgMaxEntropy );//显示图像
+27   cvReleaseImage(&amp;imgMaxEntropy ); 
+28 /<em>---------------------------------------------------------------------------</em>/
+29 /<em>基本全局阀值法</em>/
+30 IplImage* imgBasicGlobalThreshold = cvCreateImage(cvGetSize(imgGrey),IPL_DEPTH_8U,1);
+31 cvCopyImage(srcImgGrey,imgBasicGlobalThreshold);
+32 int pg[256],i,thre; 
+33 for (i=0;iimageSize;i++) // 直方图统计
+35   pg[(BYTE)imgBasicGlobalThreshold-&gt;imageData[i]]++; 
+36 thre = BasicGlobalThreshold(pg,0,256); // 确定阈值
+37   cout&lt;&lt;"The Threshold of this Image in BasicGlobalThreshold is:"&lt;height;
+9 int width = img-&gt;width;
+10 int step = img-&gt;widthStep/sizeof(uchar);
+11 uchar <em>data = (uchar</em>)img-&gt;imageData;
+12 
+13 iDiffRec =0;
+14 int F[256]={ 0 }; //直方图数组
+15 int iTotalGray=0;//灰度值和
+16 int iTotalPixel =0;//像素数和
+17 byte bt;//某点的像素值
+18 
+19 uchar iThrehold,iNewThrehold;//阀值、新阀值
+20 uchar iMaxGrayValue=0,iMinGrayValue=255;//原图像中的最大灰度值和最小灰度值
+21 uchar iMeanGrayValue1,iMeanGrayValue2;
+22 
+23 //获取(i,j)的值，存于直方图数组F
+24 for(int i=0;iiMaxGrayValue)
+32 iMaxGrayValue = bt;
+33 F[bt]++;
+34 }
+35 }
+36 
+37 iThrehold =0;//
+38 iNewThrehold = (iMinGrayValue+iMaxGrayValue)/2;//初始阀值
+39 iDiffRec = iMaxGrayValue - iMinGrayValue;
+40 
+41 for(int a=0;(abs(iThrehold-iNewThrehold)&gt;0.5)&amp;&amp;a gmax) gmax=<em>np;
+41 if(</em>np &lt; gmin) gmin=<em>np;
+42 np++; /</em> next pixel <em>/
+43 }
+44 }
+45 
+46 // set up everything
+47 sum = csum =0.0;
+48 n =0;
+49 
+50 for (k =0; k &lt;=255; k++) 
+51 {
+52 sum += (double) k * (double) ihist[k]; /</em> x<em>f(x) 质量矩</em>/
+53 n += ihist[k]; /* f(x) 质量 <em>/
+54 }
+55 
+56 if (!n) 
+57 {
+58 // if n has no value, there is problems...
+59 fprintf (stderr, "NOT NORMAL thresholdValue = 160\n");
+60 return (160);
+61 }
+62 
+63 // do the otsu global thresholding method
+64 fmax =-1.0;
+65 n1 =0;
+66 for (k =0; k &lt;255; k++)
+67 {
+68 n1 += ihist[k];
+69 if (!n1) 
+70 { 
+71 continue; 
+72 }
+73 n2 = n - n1;
+74 if (n2 ==0)
+75 { 
+76 break; 
+77 }
+78 csum += (double) k *ihist[k];
+79 m1 = csum / n1;
+80 m2 = (sum - csum) / n2;
+81 sb = (double) n1 *(double) n2 *(m1 - m2) * (m1 - m2);
+82 /</em> bbg: note: can be optimized. <em>/
+83 if (sb &gt; fmax) 
+84 {
+85 fmax = sb;
+86 thresholdValue = k;
+87 }
+88 }
+89 
+90 // at this point we have our thresholding value
+91 
+92 // debug code to display thresholding values
+93 if ( vvv &amp;1 )
+94 fprintf(stderr,"# OTSU: thresholdValue = %d gmin=%d gmax=%d\n",
+95 thresholdValue, gmin, gmax);
+96 
+97 return(thresholdValue);
+98 } 
+Otsu代码二
+1 /</em>======================================================================<em>/
+2 /</em> OTSU global thresholding routine <em>/
+3 /</em>======================================================================<em>/
+4 int otsu2 (IplImage *image)
+5 {
+6 int w = image-&gt;width;
+7 int h = image-&gt;height;
+8 
+9 unsigned char</em>np; // 图像指针
+10 unsigned char pixel;
+11 int thresholdValue=1; // 阈值
+12 int ihist[256]; // 图像直方图，256个点
+13 
+14 int i, j, k; // various counters
+15 int n, n1, n2, gmin, gmax;
+16 double m1, m2, sum, csum, fmax, sb;
+17 
+18 // 对直方图置零...
+19 memset(ihist, 0, sizeof(ihist));
+20 
+21 gmin=255; gmax=0;
+22 // 生成直方图
+23 for (i =0; i &lt; h; i++) 
+24 {
+25 np = (unsigned char<em>)(image-&gt;imageData + image-&gt;widthStep</em>i);
+26 for (j =0; j &lt; w; j++) 
+27 {
+28 pixel = np[j];
+29 ihist[ pixel]++;
+30 if(pixel &gt; gmax) gmax= pixel;
+31 if(pixel &lt; gmin) gmin= pixel;
+32 }
+33 }
+34 
+35 // set up everything
+36 sum = csum =0.0;
+37 n =0;
+38 
+39 for (k =0; k &lt;=255; k++) 
+40 {
+41 sum += k * ihist[k]; /* x<em>f(x) 质量矩</em>/
+42 n += ihist[k]; /* f(x) 质量 <em>/
+43 }
+44 
+45 if (!n) 
+46 {
+47 // if n has no value, there is problems...
+48 //fprintf (stderr, "NOT NORMAL thresholdValue = 160\n");
+49 thresholdValue =160;
+50 goto L;
+51 }
+52 
+53 // do the otsu global thresholding method
+54 fmax =-1.0;
+55 n1 =0;
+56 for (k =0; k &lt;255; k++) 
+57 {
+58 n1 += ihist[k];
+59 if (!n1) { continue; }
+60 n2 = n - n1;
+61 if (n2 ==0) { break; }
+62 csum += k *ihist[k];
+63 m1 = csum / n1;
+64 m2 = (sum - csum) / n2;
+65 sb = n1 * n2 *(m1 - m2) * (m1 - m2);
+66 /</em> bbg: note: can be optimized. <em>/
+67 if (sb &gt; fmax)
+68 {
+69 fmax = sb;
+70 thresholdValue = k;
+71 }
+72 }
+73 
+74 L:
+75 for (i =0; i &lt; h; i++) 
+76 {
+77 np = (unsigned char</em>)(image-&gt;imageData + image-&gt;widthStep<em>i);
+78 for (j =0; j &lt; w; j++) 
+79 {
+80 if(np[j] &gt;= thresholdValue)
+81 np[j] =255;
+82 else np[j] =0;
+83 }
+84 }
+85 
+86 //cout&lt;&lt;"The Threshold of this Image in Otsu is:"&lt;&lt;thresholdValue&lt;&lt;endl;
+87 return(thresholdValue);
+88 }
+最大熵阀值
+1 /</em>============================================================================
+2 = 代码内容：最大熵阈值分割 
+3 = 修改日期:2009-3-3 
+4 = 作者:crond123 
+5 = 博客:<a href="http://blog.csdn.net/crond123/">http://blog.csdn.net/crond123/</a>
+6 = E_Mail:<a href="mailto:crond123@163.com">crond123@163.com</a> 
+7 ===============================================================================<em>/
+8 // 计算当前位置的能量熵
+9 double caculateCurrentEntropy(CvHistogram * Histogram1,int cur_threshold,entropy_state state)
+10 {
+11 int start,end;
+12 int total =0;
+13 double cur_entropy =0.0;
+14 if(state == back) 
+15 {
+16 start =0;
+17 end = cur_threshold; 
+18 }
+19 else 
+20 {
+21 start = cur_threshold;
+22 end =256; 
+23 } 
+24 for(int i=start;i&lt;end;i++) 
+25 {
+26 total += (int)cvQueryHistValue_1D(Histogram1,i);//查询直方块的值 P304
+27 }
+28 for(int j=start;j&lt;end;j++)
+29 {
+30 if((int)cvQueryHistValue_1D(Histogram1,j)==0)
+31 continue;
+32 double percentage = cvQueryHistValue_1D(Histogram1,j)/total;
+33 /</em>熵的定义公式<em>/
+34 cur_entropy +=-percentage</em>logf(percentage);
+35 /<em>根据泰勒展式去掉高次项得到的熵的近似计算公式
+36 cur_entropy += percentage</em>percentage;<em>/ 
+37 }
+38 return cur_entropy;
+39 // return (1-cur_entropy);
+40 }
+41 
+42 //寻找最大熵阈值并分割
+43 void MaxEntropy(IplImage *src,IplImage *dst)
+44 {
+45 assert(src != NULL);
+46 assert(src-&gt;depth ==8&amp;&amp; dst-&gt;depth ==8);
+47 assert(src-&gt;nChannels ==1);
+48 CvHistogram * hist = cvCreateHist(1,&amp;HistogramBins,CV_HIST_ARRAY,HistogramRange);//创建一个指定尺寸的直方图
+49 //参数含义：直方图包含的维数、直方图维数尺寸的数组、直方图的表示格式、方块范围数组、归一化标志
+50 cvCalcHist(&amp;src,hist);//计算直方图
+51 double maxentropy =-1.0;
+52 int max_index =-1;
+53 // 循环测试每个分割点，寻找到最大的阈值分割点
+54 for(int i=0;imaxentropy)
+58 {
+59 maxentropy = cur_entropy;
+60 max_index = i;
+61 }
+62 }
+63 cout&lt;&lt;"The Threshold of this Image in MaxEntropy is:"&lt;&lt;max_index&lt;&lt;endl;
+64 cvThreshold(src, dst, (double)max_index,255, CV_THRESH_BINARY);
+65 cvReleaseHist(&amp;hist);
+66 }
+基本全局阀值法
+1 /</em>============================================================================
+2 = 代码内容：基本全局阈值法 
+3 ==============================================================================<em>/
+4 int BasicGlobalThreshold(int</em>pg,int start,int end)
+5 { // 基本全局阈值法
+6 int i,t,t1,t2,k1,k2;
+7 double u,u1,u2; 
+8 t=0; 
+9 u=0;
+10 for (i=start;i&lt;end;i++) 
+11 {
+12 t+=pg[i]; 
+13 u+=i<em>pg[i];
+14 }
+15 k2=(int) (u/t); // 计算此范围灰度的平均值 
+16 do 
+17 {
+18 k1=k2;
+19 t1=0; 
+20 u1=0;
+21 for (i=start;i&lt;=k1;i++) 
+22 { // 计算低灰度组的累加和
+23 t1+=pg[i]; 
+24 u1+=i</em>pg[i];
+25 }
+26 t2=t-t1;
+27 u2=u-u1;
+28 if (t1) 
+29 u1=u1/t1; // 计算低灰度组的平均值
+30 else 
+31 u1=0;
+32 if (t2) 
+33 u2=u2/t2; // 计算高灰度组的平均值
+34 else 
+35 u2=0;
+36 k2=(int) ((u1+u2)/2); // 得到新的阈值估计值
+37 }
+38 while(k1!=k2); // 数据未稳定，继续
+39 //cout&lt;&lt;"The Threshold of this Image in BasicGlobalThreshold is:"&lt;&lt;k1&lt;&lt;endl;
+40 return(k1); // 返回阈值
+41 }
+``</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/fengyin123/fengyin">Image Process 阈值处理</a> is maintained by <a href="https://github.com/fengyin123">fengyin123</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
